@@ -12,15 +12,17 @@ def racer-complete -docstring "Complete the current selection with racer" %{
         (
             cursor="${kak_cursor_line} $((${kak_cursor_column} - 1))"
             racer_data=$(racer -i tab-text complete ${cursor} ${kak_buffile} ${dir}/buf)
-            compl_column=$(echo "${racer_data}" | head -n1 | awk '{print $2}')
+            prefix_1=$(echo "${racer_data}" | head -n1 | awk '{print $2}')
+            prefix_2=$(echo "${racer_data}" | head -n1 | awk '{print $3}')
+            compl_column=$((${kak_cursor_column} + ${prefix_1} - ${prefix_2}))
 
-            header="${kak_cursor_line}.${compl_column}@${kak_timestamp}"
-            compl=$(echo "${racer_data}" | grep '^MATCH' | cut -f2,7 --output-delimiter='|' | sed -e 's/:/\\:/g' -e 's/;/\\;/g'| awk -F "|" '{print $1 "|" $2 "|" $1}' | paste -s -d: -)
-            printf %s\\n "racer -i tab-text complete ${cursor} ${kak_buffile} ${dir}/buf" > /tmp/kak-racer-out
-            printf %s\\n "${racer_data}" >> /tmp/kak-racer-out
-            printf %s\\n "${compl}" >> /tmp/kak-racer-out
+            header="${kak_cursor_line}.${compl_column}\\@${kak_timestamp}"
+            compl=$(echo "${racer_data}" | grep '^MATCH' | cut -f2,7 --output-delimiter='|' | sed -e 's/:/\\:/g' | awk -F "|" '{print $1 "|" $2 "|" $1}' | paste -s -d: -)
+            #printf %s\\n "racer -i tab-text complete ${cursor} ${kak_buffile} ${dir}/buf" > /tmp/kak-racer-out
+            #printf %s\\n "${racer_data}" >> /tmp/kak-racer-out
+            #printf %s\\n "%@${header}:${compl}@" >> /tmp/kak-racer-out
             printf %s\\n "eval -client '${kak_client}' %{
-                set buffer=${kak_bufname} racer_completions '${header}:${compl}'
+                set buffer=${kak_bufname} racer_completions %@${header}:${compl}@
             }" | kak -p ${kak_session}
             rm -r ${dir}
         ) > /dev/null 2>&1 < /dev/null &
