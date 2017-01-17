@@ -1,6 +1,6 @@
 hook global WinSetOption filetype=rust %{
-    set window formatcmd 'rustfmt' # still useful for standalone files
-    set window makecmd 'cargo build'
+    set-option window formatcmd 'rustfmt'
+    set-option window makecmd 'cargo build'
     racer-enable-autocomplete
 
     map window user f ':nop %sh{cargo fmt}<ret>'
