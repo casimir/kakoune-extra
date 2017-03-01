@@ -11,18 +11,35 @@ def racer-complete -docstring "Complete the current selection with racer" %{
         dir=${kak_opt_racer_tmp_dir}
         (
             cursor="${kak_cursor_line} $((${kak_cursor_column} - 1))"
-            racer_data=$(racer -i tab-text complete-with-snippet ${cursor} ${kak_buffile} ${dir}/buf)
-            prefix_1=$(echo "${racer_data}" | head -n1 | awk '{print $2}')
-            prefix_2=$(echo "${racer_data}" | head -n1 | awk '{print $3}')
-            compl_column=$((${kak_cursor_column} + ${prefix_1} - ${prefix_2}))
-
-            header="${kak_cursor_line}.${compl_column}\\@${kak_timestamp}"
-            compl=$(echo "${racer_data}" | grep '^MATCH' | cut -f2,8,9 --output-delimiter='|' | sed -e 's/:/\\:/g' | awk -F "|" '{print $1 "|" $3 "|" $2}' | paste -s -d: -)
-            printf %s\\n "racer -i tab-text complete-with-snippet ${cursor} ${kak_buffile} ${dir}/buf" > /tmp/kak-racer-out
-            printf %s\\n "${racer_data}" >> /tmp/kak-racer-out
-            printf %s\\n "%@${header}:${compl}@" >> /tmp/kak-racer-out
+            racer_data=$(racer --interface tab-text complete-with-snippet ${cursor} ${kak_buffile} ${dir}/buf)
+            compl=$(printf %s\\n "${racer_data}" | awk '
+                BEGIN { FS = "\t"; ORS = ":" }
+                /^PREFIX/ {
+                    column = ENVIRON["kak_cursor_column"] + $2 - $3
+                    print ENVIRON["kak_cursor_line"] "." column "\\@" ENVIRON["kak_timestamp"]
+                }
+                /^MATCH/ {
+                    word = $2
+                    type = $7
+                    desc = substr($9, 2, length($9) - 2)
+                    gsub(/\\n/, "\n", desc)
+                    menu = $8
+                    sub(/^pub /, "", menu)
+                    gsub(/\|/, "\\|", menu)
+                    if (type == "Function") {
+                        sub(word, "{default+e}" word "{default+d}", menu)
+                        menu = "{default+d}" menu
+                        word = word "("
+                    } else {
+                        menu = "{default+e}" word "{default+d} " menu
+                    }
+                    candidate = word "|" desc "|" menu
+                    gsub(/:/, "\\:", candidate)
+                    print candidate
+                }'
+            )
             printf %s\\n "eval -client '${kak_client}' %{
-                set buffer=${kak_bufname} racer_completions %@${header}:${compl}@
+                set buffer=${kak_bufname} racer_completions %@${compl}@
             }" | kak -p ${kak_session}
             rm -r ${dir}
         ) > /dev/null 2>&1 < /dev/null &
