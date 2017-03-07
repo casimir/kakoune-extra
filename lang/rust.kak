@@ -8,4 +8,5 @@ hook global WinSetOption filetype=rust %{
 
 hook global WinSetOption filetype=(?!rust).* %{
     unmap window user f
+    racer-disable-autocomplete
 }
