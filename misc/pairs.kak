@@ -1,21 +1,21 @@
 def -hidden _insert-paren %{ try %{
     exec -draft hLs\([^)]<ret> \;i)
-    exec <left>
+    exec <a-\;>H
 } }
 
 def -hidden _insert-brace %[ try %[
     exec -draft hLs{[^}]<ret> \;i}
-    exec <left>
+    exec <a-\;>H
 ] ]
 
 def -hidden _insert-bracket %{ try %{
     exec -draft hLs\[[^\]]<ret> \;i]
-    exec <left>
+    exec <a-\;>H
 } }
 
 def -hidden _insert-chevron %{ try %{
     exec -draft hLs<lt>[^<gt>]<ret> \;i<gt>
-    exec <left>
+    exec <a-\;>H
 } }
 
 def pairs-enable "
