@@ -18,13 +18,13 @@ def -hidden _insert-chevron %{ try %{
     exec <left>
 } }
 
-def smartpairs-enable "
-    hook window InsertChar \( -group smartpairs-hooks _insert-paren
-    hook window InsertChar {  -group smartpairs-hooks _insert-brace
-    hook window InsertChar \[ -group smartpairs-hooks _insert-bracket
-    hook window InsertChar <  -group smartpairs-hooks _insert-chevron
+def pairs-enable "
+    hook window InsertChar \( -group pairs-hooks _insert-paren
+    hook window InsertChar {  -group pairs-hooks _insert-brace
+    hook window InsertChar \[ -group pairs-hooks _insert-bracket
+    hook window InsertChar <  -group pairs-hooks _insert-chevron
 "
 
-def smartpairs-disable %{
-    remove-hooks window smartpairs-hooks
+def pairs-disable %{
+    remove-hooks window pairs-hooks
 }
